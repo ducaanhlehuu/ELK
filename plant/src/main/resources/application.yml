@@ -1,0 +1,18 @@
+spring:
+  application:
+    name : plant
+  elasticsearch:
+    rest:
+      uris: https://localhost:9200
+      connection-timeout: 3000
+      socket-timeout: 3000
+      username: elastic
+      password: ducanh
+springdoc:
+  api-docs:
+    enabled : true
+  swagger-ui:
+    enabled : true
+    default-model-expand-depth : 2
+    default-model-rendering: example
+
