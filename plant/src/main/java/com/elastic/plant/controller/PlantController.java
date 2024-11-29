@@ -110,8 +110,10 @@ public class PlantController {
                             .plant(hit.source())
                             .id(hit.id())
                             .score(hit.score())
+                            .totalResults(response.hits().total().value())
                             .build())
                     .toList();
+
             logger.info("Search results for string '{}': {}", query, plants);
             return ResponseEntity.ok(plants);
         } catch (IOException e) {
@@ -144,6 +146,7 @@ public class PlantController {
                 body.put("plant",PlantResponse.builder()
                         .plant(updatedPlant)
                         .id(updated.id())
+                        .totalResults(1L)
                         .build());
                 return ResponseEntity.ok(body);
             } else {

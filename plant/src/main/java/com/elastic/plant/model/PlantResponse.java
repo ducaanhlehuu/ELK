@@ -8,5 +8,6 @@ import lombok.Data;
 public class PlantResponse {
     private String id;
     private Double score;
+    private Long totalResults;
     private Plant plant;
 }

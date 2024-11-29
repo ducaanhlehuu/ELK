@@ -88,7 +88,7 @@ public class PlantService {
                 .id(id), Plant.class);
         System.out.println(response.toString());
         if (response.found()) {
-            return PlantResponse.builder().id(response.id())
+            return PlantResponse.builder().id(response.id()).totalResults(1L)
                     .score(null).plant(response.source()).build();
         }
         return null;
