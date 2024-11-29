@@ -1,104 +1,84 @@
 package com.elastic.plant.model;
 
-
-import com.elastic.plant.model.subfield.Dimension;
-import com.elastic.plant.model.subfield.Flowers;
-import com.elastic.plant.model.subfield.Fruit;
-import com.elastic.plant.model.subfield.Leaves;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.*;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.Mapping;
 
 import java.util.List;
-import io.swagger.v3.oas.annotations.media.Schema;
 
-@Data
-@Document(indexName = "plants")
+@Mapping
 @AllArgsConstructor
 @NoArgsConstructor
-
+@Data
+@Builder
+@Document(indexName = "plants_v12")
 public class Plant {
 
-    @Id
-    @Schema(description = "ID duy nhất của thực vật.")
-    private String id;
-
-    @Field(type = FieldType.Text, analyzer = "standard")
-    @Schema(description = "Tên phổ biến của thực vật, được sử dụng rộng rãi bởi người dân.")
-    private String commonName;
-
-    @Field(type = FieldType.Text, analyzer = "standard")
-    @Schema(description = "Tên khoa học của thực vật, theo hệ thống phân loại.")
+    @Field(type = FieldType.Text, analyzer = "short_text_analyzer", similarity = "scripted_tfidf")
+    @JsonProperty("scientific_name")
     private String scientificName;
 
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Gia đình thực vật mà thực vật thuộc về.")
+    @Field(type = FieldType.Text, analyzer = "short_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("english_name")
+    private String englishName;
+
+    @Field(type = FieldType.Text, analyzer = "short_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("vietnamese_name")
+    private List<String> vietnameseNames;
+
+    @Field(type = FieldType.Text, analyzer = "short_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("other_names")
+    private List<String> otherNames;
+
+    @Field(type = FieldType.Text, similarity = "scripted_tfidf")
+    @JsonProperty("division")
+    private String division;
+
+    @Field(type = FieldType.Text, analyzer = "custom_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("division_description")
+    private String divisionDescription;
+
+    @Field(type = FieldType.Text, similarity = "scripted_tfidf")
+    @JsonProperty("_class")
+    private String classType;
+
+    @Field(type = FieldType.Text, analyzer = "custom_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("_class_description")
+    private String classDescription;
+
+    @Field(type = FieldType.Text, similarity = "scripted_tfidf")
+    @JsonProperty("order")
+    private String order;
+
+    @Field(type = FieldType.Text, analyzer = "custom_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("order_description")
+    private String orderDescription;
+
+    @Field(type = FieldType.Text, similarity = "scripted_tfidf")
+    @JsonProperty("family")
     private String family;
 
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Loại thực vật (ví dụ: cây, bụi cây, hoa, v.v.).")
-    private String type;
+    @Field(type = FieldType.Text, analyzer = "custom_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("family_description")
+    private String familyDescription;
 
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Danh sách các địa điểm hoặc quốc gia mà thực vật có nguồn gốc.")
-    private List<String> origin;
+    @Field(type = FieldType.Text, similarity = "scripted_tfidf")
+    @JsonProperty("genus")
+    private String genus;
 
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Danh sách các vùng khí hậu phù hợp cho sự phát triển của thực vật.")
-    private List<String> zones;
+    @Field(type = FieldType.Text, analyzer = "custom_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("genus_description")
+    private String genusDescription;
 
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Danh sách các ứng dụng của thực vật (ví dụ: thực phẩm, trang trí, thuốc, v.v.).")
-    private List<String> uses;
-
-    @Field(type = FieldType.Nested)
-    @Schema(description = "Thông tin về chiều cao của thực vật.")
-    private Dimension height;
-
-    @Field(type = FieldType.Nested)
-    @Schema(description = "Thông tin về chiều rộng của thực vật.")
-    private Dimension spread;
-
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Yêu cầu về ánh sáng mặt trời của thực vật (ví dụ: nắng đầy đủ, bóng râm, v.v.).")
-    private List<String> sunRequirements;
-
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Sở thích về lượng nước của thực vật (ví dụ: khô, vừa phải, ẩm ướt).")
-    private List<String> waterPreferences;
-
-    @Field(type = FieldType.Nested)
-    @Schema(description = "Thông tin về lá của thực vật.")
-    private Leaves leaves;
-
-    @Field(type = FieldType.Nested)
-    @Schema(description = "Thông tin về hoa của thực vật.")
-    private Flowers flowers;
-
-    @Field(type = FieldType.Nested)
-    @Schema(description = "Thông tin về trái cây mà thực vật có thể sản xuất.")
-    private Fruit fruit;
-
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Các phương pháp nhân giống thực vật (ví dụ: hạt, giâm cành, phân nhánh, v.v.).")
-    private List<String> propagationMethods;
-
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Các thông tin liên quan đến độ độc của thực vật, nếu có.")
-    private List<String> toxicity;
-
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Các vị trí trong vườn nơi thực vật có thể được trồng.")
-    private List<String> gardenLocations;
-
-    @Field(type = FieldType.Keyword)
-    @Schema(description = "Các phong cách vườn phù hợp với thực vật (ví dụ: vườn cổ điển, vườn hiện đại, v.v.).")
-    private List<String> gardenStyles;
-
-    @Field(type = FieldType.Text, analyzer = "standard")
-    @Schema(description = "Mô tả chi tiết về thực vật, bao gồm các đặc điểm nổi bật, cách chăm sóc, và các thông tin hữu ích khác.")
+    @Field(type = FieldType.Text, analyzer = "custom_text_analyzer", similarity = "my_bm25_similarity")
+    @JsonProperty("description")
     private String description;
+
 }

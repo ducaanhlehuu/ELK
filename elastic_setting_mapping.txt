@@ -1,0 +1,238 @@
+PUT /plants_v12
+{
+  "settings": {
+    "index.max_ngram_diff": 12,
+    "analysis": {
+      "tokenizer": {
+        "whitespace_tokenizer": {
+          "type": "whitespace"
+        }
+      },
+      "filter": {
+        "custom_trigram_filter": {
+          "type": "shingle",
+          "min_shingle_size": 3,
+          "max_shingle_size": 3,
+          "output_unigrams": false
+        },
+        "custom_shingle_filter": {
+          "min_shingle_size": 2,
+          "max_shingle_size": 3,
+          "output_unigrams": false,
+          "type": "shingle"
+        },
+        "custom_ngram_filter": {
+          "type": "ngram",
+          "min_gram": 5,
+          "max_gram": 15
+        },
+        "remove_special_characters": {
+          "type": "pattern_replace",
+          "pattern": "[\\n\\r]+",  
+          "replacement": "" 
+        },
+        "remove_punctuation": {
+          "type": "pattern_replace",
+          "pattern": "[\\p{Punct}]",
+          "replacement": ""
+        }
+      },
+      "analyzer": {
+        "short_text_analyzer": {
+          "type": "custom",
+          "tokenizer": "whitespace_tokenizer",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "custom_ngram_filter",
+            "remove_punctuation"
+          ]
+        },
+        "custom_text_analyzer": {
+          "type": "custom",
+          "tokenizer": "whitespace_tokenizer",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "custom_shingle_filter",
+            "remove_special_characters",
+            "remove_punctuation"
+          ]
+        }
+      }
+    },
+    "similarity": {
+      "my_bm25_similarity": {
+        "type": "BM25",
+        "k1": 1.2,
+        "b": 0.75
+      },
+      "scripted_tfidf": {
+        "type": "scripted",
+        "script": {
+          "source": """
+            double tf = Math.sqrt(doc.freq); 
+            double idf = Math.log((field.docCount+1.0)/(term.docFreq+1.0)) + 1.0; 
+            double norm = 1/Math.sqrt(doc.length); 
+            return query.boost * tf * idf * norm;
+          """
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "scientific_name": {
+        "type": "text",
+        "analyzer": "short_text_analyzer",
+        "similarity": "scripted_tfidf",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "english_name": {
+        "type": "text",
+        "analyzer": "short_text_analyzer",
+        "similarity": "my_bm25_similarity",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "vietnamese_name": {
+        "type": "text",
+        "analyzer": "short_text_analyzer",
+        "similarity": "my_bm25_similarity",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "other_names": {
+        "type": "text",
+        "analyzer": "short_text_analyzer",
+        "similarity": "my_bm25_similarity",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "division": {
+        "type": "text",
+        "similarity": "scripted_tfidf",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "division_description": {
+        "type": "text",
+        "analyzer": "custom_text_analyzer",
+        "similarity": "my_bm25_similarity"
+      },
+      "_class": {
+        "type": "text",
+        "similarity": "scripted_tfidf",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "_class_description": {
+        "type": "text",
+        "analyzer": "custom_text_analyzer",
+        "similarity": "my_bm25_similarity"
+      },
+      "order": {
+        "type": "text",
+        "similarity": "scripted_tfidf",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "order_description": {
+        "type": "text",
+        "analyzer": "custom_text_analyzer",
+        "similarity": "my_bm25_similarity"
+      },
+      "family": {
+        "type": "text",
+        "similarity": "scripted_tfidf",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "family_description": {
+        "type": "text",
+        "analyzer": "custom_text_analyzer",
+        "similarity": "my_bm25_similarity"
+      },
+      "genus": {
+        "type": "text",
+        "similarity": "scripted_tfidf",
+        "fields": {
+          "ngram": {
+            "type": "text",
+            "analyzer": "short_text_analyzer"
+          },
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "genus_description": {
+        "type": "text",
+        "analyzer": "custom_text_analyzer",
+        "similarity": "my_bm25_similarity"
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "custom_text_analyzer",
+        "similarity": "my_bm25_similarity"
+      }
+    }
+  }
+}
