@@ -61,26 +61,39 @@ public class PlantService {
         }
     }
 
-    public SearchResponse<Plant> searchByQueryString(String query) throws IOException {
-        return ElasticsearchClientProvider.getClient().search(s -> s
-                        .index(INDEX_NAME)
-                        .query(q -> q
-                                .queryString(qs -> qs
-                                        .query(query)
-                                        .defaultField("*")
-                                )
-                        ),
-                Plant.class);
+    public SearchResponse<Plant> searchByQueryAll(String query) throws IOException {
+        if (query == null || query.trim().isEmpty()) {
+            throw new IllegalArgumentException("Search query cannot be null or empty");
+        }
+
+        try {
+            return ElasticsearchClientProvider.getClient().search(
+                    s -> s
+                            .index(INDEX_NAME)
+                            .size(1000)
+                            .query(q -> q.queryString(qs -> qs
+                                    .query(query)
+                                    .defaultField("*")
+                                    .analyzeWildcard(true)
+                            ))
+                            .source(src -> src.filter(f -> f.includes("_id", "*"))), // Lọc các trường cần thiết
+                    Plant.class
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
-    public SearchResponse<Plant> searchPlants(String query) throws IOException {
-        return ElasticsearchClientProvider.getClient().search(s -> s
-                        .index(INDEX_NAME)
-                        .query(q -> q
-                                .queryString(qs -> qs.analyzer("custom_text_analyzer")
-                                        .query(query))),
-                Plant.class);
-    }
+
+//    public SearchResponse<Plant> searchPlants(String query) throws IOException {
+//        return ElasticsearchClientProvider.getClient().search(s -> s
+//                        .index(INDEX_NAME)
+//                        .query(q -> q
+//                                .queryString(qs -> qs.analyzer("custom_text_analyzer")
+//                                        .query(query))),
+//                Plant.class);
+//    }
 
     public PlantResponse getPlantById(String id) throws IOException {
         GetResponse<Plant> response = ElasticsearchClientProvider.getClient().get(g -> g
@@ -94,36 +107,36 @@ public class PlantService {
         return null;
     }
 
-    public SearchResponse<Plant> searchByDescription(String description) throws IOException {
-        return ElasticsearchClientProvider.getClient().search(s -> s
-                        .index(INDEX_NAME)
-                        .query(q -> q
-                                .match(m -> m
-                                        .field("description")
-                                        .query(description))),
-                Plant.class);
-    }
-
-    public SearchResponse<Plant> searchByName(String name) throws IOException {
-        return ElasticsearchClientProvider.getClient().search(s -> s
-                        .index(INDEX_NAME)
-                        .query(q -> q
-                                .multiMatch(m -> m
-                                        .fields("commonName", "scientificName")
-                                        .query(name) // Tìm kiếm theo tên
-                                )
-                        ),
-                Plant.class);
-    }
-    public SearchResponse<Plant> searchByField(String fieldName, String keyword) throws IOException {
-        return ElasticsearchClientProvider.getClient().search(s -> s
-                        .index(INDEX_NAME)
-                        .query(q -> q
-                                .term(t -> t
-                                        .field(fieldName)
-                                        .value(keyword))),
-                Plant.class);
-    }
+//    public SearchResponse<Plant> searchByDescription(String description) throws IOException {
+//        return ElasticsearchClientProvider.getClient().search(s -> s
+//                        .index(INDEX_NAME)
+//                        .query(q -> q
+//                                .match(m -> m
+//                                        .field("description")
+//                                        .query(description))),
+//                Plant.class);
+//    }
+//
+//    public SearchResponse<Plant> searchByName(String name) throws IOException {
+//        return ElasticsearchClientProvider.getClient().search(s -> s
+//                        .index(INDEX_NAME)
+//                        .query(q -> q
+//                                .multiMatch(m -> m
+//                                        .fields("commonName", "scientificName")
+//                                        .query(name) // Tìm kiếm theo tên
+//                                )
+//                        ),
+//                Plant.class);
+//    }
+//    public SearchResponse<Plant> searchByField(String fieldName, String keyword) throws IOException {
+//        return ElasticsearchClientProvider.getClient().search(s -> s
+//                        .index(INDEX_NAME)
+//                        .query(q -> q
+//                                .term(t -> t
+//                                        .field(fieldName)
+//                                        .value(keyword))),
+//                Plant.class);
+//    }
 
     public UpdateResponse updatePlant(String id, Plant updatedPlant) throws IOException {
         try {

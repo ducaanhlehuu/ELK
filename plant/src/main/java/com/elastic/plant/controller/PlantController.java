@@ -82,12 +82,13 @@ public class PlantController {
     @GetMapping("/search_string")
     public ResponseEntity<List<PlantResponse>> searchPlantsByString(@RequestParam String query) {
         try {
-            var response = plantService.searchByQueryString(query);
+            var response = plantService.searchByQueryAll(query);
             List<PlantResponse> plants = response.hits().hits().stream()
                     .map(hit -> PlantResponse.builder()
                             .plant(hit.source())
                             .id(hit.id())
                             .score(hit.score())
+                            .totalResults(response.hits().total().value())
                             .build())
                     .toList();
             logger.info("Search results for string '{}': {}", query, plants);
